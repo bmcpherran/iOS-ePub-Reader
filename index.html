@@ -11,13 +11,12 @@
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
 
   :root {
-    --bg: #253238;
-    --page-bg: #273841;
-    --text: #d4cfc8;
-    --text-muted: #7a8a90;
+    --bg: #333333;
+    --text: #9D9D9D;
+    --text-muted: #666666;
     --accent: #c8823a;
-    --border: #344a52;
-    --shadow: rgba(0,0,0,0.35);
+    --border: #444444;
+    --ui-bg: #2a2a2a;
     --font-size: 19px;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -37,7 +36,6 @@
     -webkit-text-size-adjust: none;
   }
 
-  /* ── FULL SCREEN LAYOUT ── */
   #app {
     display: flex;
     flex-direction: column;
@@ -48,17 +46,169 @@
     padding-right: var(--safe-right);
   }
 
-  /* ── TOP BAR ── */
+  /* ── DROP ZONE ── */
+  #drop-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 24px;
+    background: var(--bg);
+  }
+  #drop-zone .drop-icon { font-size: 56px; opacity: 0.3; }
+  #drop-zone h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--text);
+    text-align: center;
+  }
+  #drop-zone p { font-size: 15px; color: var(--text-muted); text-align: center; line-height: 1.5; }
+  #drop-zone .open-btn {
+    margin-top: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-family: 'EB Garamond', serif;
+    font-size: 17px;
+    cursor: pointer;
+    -webkit-user-select: none;
+  }
+  #file-input { display: none; }
+
+  /* ── READER ── */
+  #page-container {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── SCROLLABLE READING AREA ── */
+  #scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 32px 24px 40px;
+  }
+
+  #page-content {
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.85;
+  }
+
+  #page-content h1, #page-content h2, #page-content h3 {
+    font-family: 'Playfair Display', serif;
+    margin: 1.4em 0 0.5em;
+    line-height: 1.3;
+    color: var(--text);
+  }
+  #page-content h1 { font-size: 1.5em; }
+  #page-content h2 { font-size: 1.25em; }
+  #page-content h3 { font-size: 1.05em; }
+
+  #page-content p {
+    margin-bottom: 0.85em;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+  #page-content p + p { text-indent: 1.5em; }
+
+  /* ── IMAGES: full width, caption below ── */
+  #page-content img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 1.2em 0 0;
+    border-radius: 3px;
+  }
+
+  /* Treat any element immediately after an img as a caption */
+  #page-content img + p,
+  #page-content img + div,
+  #page-content img + span {
+    font-size: 0.82em;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0.4em;
+    margin-bottom: 1.2em;
+    text-indent: 0 !important;
+    font-style: italic;
+  }
+
+  #page-content.invert-images img { filter: invert(1) contrast(0.65); }
+  #page-content a { color: var(--accent); text-decoration: none; }
+  #page-content blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* ── TAP ZONES (invisible, for chapter nav) ── */
+  #tap-zones {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    pointer-events: none;
+    z-index: 10;
+  }
+  #tap-prev, #tap-next {
+    width: 25%;
+    height: 100%;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  #tap-middle {
+    flex: 1;
+    height: 100%;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  /* ── CHROME (top + bottom bars, hidden by default) ── */
+  #topbar, #bottom-bar {
+    position: absolute;
+    left: 0; right: 0;
+    z-index: 20;
+    background: var(--ui-bg);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   #topbar {
+    top: 0;
+    transform: translateY(-100%);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+    padding: calc(var(--safe-top) + 10px) 16px 10px;
     gap: 10px;
     min-height: 52px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #bottom-bar {
+    bottom: 0;
+    transform: translateY(100%);
+    padding: 10px 16px calc(var(--safe-bottom) + 10px);
+    border-top: 1px solid var(--border);
+  }
+
+  #topbar.visible, #bottom-bar.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   #book-title {
@@ -94,7 +244,6 @@
     padding: 0 10px;
     white-space: nowrap;
     font-family: 'EB Garamond', serif;
-    transition: background 0.15s;
     -webkit-user-select: none;
     user-select: none;
   }
@@ -108,145 +257,28 @@
     text-align: center;
   }
 
-  /* ── MAIN CONTENT AREA ── */
-  #main {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ── DROP ZONE ── */
-  #drop-zone {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 40px 24px;
-    cursor: pointer;
-  }
-  #drop-zone .drop-icon { font-size: 56px; opacity: 0.35; }
-  #drop-zone h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 24px;
-    font-weight: 400;
-    color: var(--text);
-    text-align: center;
-  }
-  #drop-zone p { font-size: 15px; color: var(--text-muted); text-align: center; line-height: 1.5; }
-  #drop-zone .open-btn {
-    margin-top: 8px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 14px 32px;
-    font-family: 'EB Garamond', serif;
-    font-size: 17px;
-    cursor: pointer;
-    -webkit-user-select: none;
-  }
-  #file-input { display: none; }
-
-  /* ── PAGE CONTAINER ── */
-  #page-container {
-    display: none;
-    flex: 1;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* ── SCROLLABLE READING AREA ── */
-  #scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    padding: 28px 22px 20px;
-  }
-
-  #page-content {
-    max-width: 640px;
-    margin: 0 auto;
-    line-height: 1.85;
-  }
-
-  #page-content h1, #page-content h2, #page-content h3 {
-    font-family: 'Playfair Display', serif;
-    margin: 1.4em 0 0.5em;
-    line-height: 1.3;
-    color: var(--text);
-  }
-  #page-content h1 { font-size: 1.5em; }
-  #page-content h2 { font-size: 1.25em; }
-  #page-content h3 { font-size: 1.1em; }
-
-  #page-content p {
-    margin-bottom: 0.85em;
-    text-align: justify;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-  }
-  #page-content p + p { text-indent: 1.5em; }
-
-  #page-content img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1em auto;
-    border-radius: 4px;
-  }
-  #page-content.invert-images img { filter: invert(1) contrast(0.65); }
-  #page-content a { color: var(--accent); text-decoration: none; }
-  #page-content blockquote {
-    border-left: 3px solid var(--accent);
-    margin: 1em 0;
-    padding: 0.5em 1em;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  /* ── PROGRESS BAR ── */
-  #progress-bar {
-    height: 3px;
-    background: var(--border);
-    flex-shrink: 0;
-  }
-  #progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.3s ease;
-  }
-
-  /* ── BOTTOM NAV ── */
-  #nav-bar {
+  /* ── BOTTOM BAR CONTENTS ── */
+  #nav-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
     gap: 12px;
+    margin-bottom: 10px;
   }
 
   .nav-btn {
-    background: var(--page-bg);
+    background: none;
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 12px 20px;
+    padding: 10px 18px;
     border-radius: 10px;
     cursor: pointer;
     font-family: 'EB Garamond', serif;
     font-size: 16px;
-    min-width: 80px;
+    min-width: 76px;
     text-align: center;
     -webkit-user-select: none;
     user-select: none;
-    transition: background 0.15s;
   }
   .nav-btn:active:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
   .nav-btn:disabled { opacity: 0.3; }
@@ -268,6 +300,20 @@
     white-space: nowrap;
   }
 
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
   /* ── TOC OVERLAY ── */
   #toc-overlay {
     display: none;
@@ -275,15 +321,13 @@
     inset: 0;
     z-index: 100;
     background: rgba(0,0,0,0.5);
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
   #toc-overlay.open { display: flex; }
 
   #toc-panel {
     width: 80%;
     max-width: 320px;
-    background: #1e2d33;
+    background: var(--ui-bg);
     display: flex;
     flex-direction: column;
     padding-top: var(--safe-top);
@@ -331,47 +375,60 @@
     border-left: 3px solid transparent;
     -webkit-user-select: none;
   }
-  .toc-item:active { background: rgba(200,130,58,0.12); }
+  .toc-item:active { background: rgba(200,130,58,0.1); }
   .toc-item.active { border-left-color: var(--accent); color: var(--accent); }
 
-  /* ── PAGE TURN ANIMATION ── */
   @keyframes pageIn {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(5px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .page-turn { animation: pageIn 0.18s ease; }
+  .page-turn { animation: pageIn 0.15s ease; }
 </style>
 </head>
 <body>
 
 <div id="app">
-  <div id="topbar">
-    <div id="book-title">No book loaded</div>
-    <div class="topbar-controls">
-      <button class="icon-btn" id="toc-btn">☰</button>
-      <button class="icon-btn" id="font-down">A−</button>
-      <span id="font-size-display">19</span>
-      <button class="icon-btn" id="font-up">A+</button>
-      <button class="icon-btn" id="invert-btn">⬛</button>
-    </div>
+
+  <input type="file" id="file-input" accept=".epub">
+
+  <!-- Drop / open screen -->
+  <div id="drop-zone">
+    <div class="drop-icon">📖</div>
+    <h2>Open an EPUB</h2>
+    <p>Tap below to choose a file from your Files app or iCloud Drive</p>
+    <button class="open-btn" id="open-btn">Choose File</button>
   </div>
 
-  <div id="main">
-    <input type="file" id="file-input" accept=".epub">
+  <!-- Reader -->
+  <div id="page-container">
 
-    <div id="drop-zone">
-      <div class="drop-icon">📖</div>
-      <h2>Open an EPUB</h2>
-      <p>Tap below to choose a file from your Files app or iCloud Drive</p>
-      <button class="open-btn" id="open-btn">Choose File</button>
+    <!-- Invisible tap zones -->
+    <div id="tap-zones">
+      <div id="tap-prev"></div>
+      <div id="tap-middle"></div>
+      <div id="tap-next"></div>
     </div>
 
-    <div id="page-container">
-      <div id="scroll-area">
-        <div id="page-content"></div>
+    <!-- Top bar (hidden until tap) -->
+    <div id="topbar">
+      <div id="book-title">No book loaded</div>
+      <div class="topbar-controls">
+        <button class="icon-btn" id="toc-btn">☰</button>
+        <button class="icon-btn" id="font-down">A−</button>
+        <span id="font-size-display">19</span>
+        <button class="icon-btn" id="font-up">A+</button>
+        <button class="icon-btn" id="invert-btn">⬛</button>
       </div>
-      <div id="progress-bar"><div id="progress-fill"></div></div>
-      <div id="nav-bar">
+    </div>
+
+    <!-- Scroll area -->
+    <div id="scroll-area">
+      <div id="page-content"></div>
+    </div>
+
+    <!-- Bottom bar (hidden until tap) -->
+    <div id="bottom-bar">
+      <div id="nav-row">
         <button class="nav-btn" id="prev-btn">← Prev</button>
         <div id="page-info">
           <span id="page-num"></span>
@@ -379,7 +436,9 @@
         </div>
         <button class="nav-btn" id="next-btn">Next →</button>
       </div>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
     </div>
+
   </div>
 </div>
 
@@ -401,6 +460,7 @@ let bookId = null;
 let fontSize = 19;
 let tocItems = [];
 let invertImages = false;
+let chromeVisible = false;
 
 const STORAGE_KEY = 'epub_reader_state';
 
@@ -424,6 +484,36 @@ const fontUp        = document.getElementById('font-up');
 const fontDown      = document.getElementById('font-down');
 const fontDisplay   = document.getElementById('font-size-display');
 const invertBtn     = document.getElementById('invert-btn');
+const topbar        = document.getElementById('topbar');
+const bottomBar     = document.getElementById('bottom-bar');
+const tapPrev       = document.getElementById('tap-prev');
+const tapMiddle     = document.getElementById('tap-middle');
+const tapNext       = document.getElementById('tap-next');
+
+// ── CHROME SHOW/HIDE ──
+function showChrome() {
+  chromeVisible = true;
+  topbar.classList.add('visible');
+  bottomBar.classList.add('visible');
+}
+function hideChrome() {
+  chromeVisible = false;
+  topbar.classList.remove('visible');
+  bottomBar.classList.remove('visible');
+}
+function toggleChrome() {
+  chromeVisible ? hideChrome() : showChrome();
+}
+
+tapMiddle.addEventListener('click', toggleChrome);
+tapPrev.addEventListener('click', () => {
+  if (chromeVisible) { hideChrome(); return; }
+  if (currentPage > 0) { currentPage--; renderPage(); }
+});
+tapNext.addEventListener('click', () => {
+  if (chromeVisible) { hideChrome(); return; }
+  if (currentPage < pages.length - 1) { currentPage++; renderPage(); }
+});
 
 // ── IMAGE INVERT ──
 function toggleInvert() {
@@ -439,7 +529,7 @@ if (localStorage.getItem('epub_invert') === '1') {
 }
 invertBtn.addEventListener('click', toggleInvert);
 
-// ── TOC TOGGLE ──
+// ── TOC ──
 function openToc() {
   tocOverlay.classList.add('open');
   tocBtn.classList.add('active');
@@ -465,7 +555,6 @@ fontDown.addEventListener('click', () => { if (fontSize > 13) { fontSize--; appl
 
 // ── FILE OPEN ──
 openBtn.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('click', e => { if (e.target !== openBtn) fileInput.click(); });
 fileInput.addEventListener('change', e => {
   if (e.target.files[0]) loadEpub(e.target.files[0]);
 });
@@ -478,10 +567,10 @@ scrollArea.addEventListener('touchstart', e => {
   touchStartY = e.touches[0].clientY;
 }, { passive: true });
 scrollArea.addEventListener('touchend', e => {
+  if (chromeVisible) return;
   const dx = e.changedTouches[0].clientX - touchStartX;
   const dy = e.changedTouches[0].clientY - touchStartY;
-  // Only swipe if horizontal movement dominates
-  if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 40) {
+  if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 50) {
     if (dx < 0 && currentPage < pages.length - 1) { currentPage++; renderPage(); }
     if (dx > 0 && currentPage > 0) { currentPage--; renderPage(); }
   }
@@ -595,6 +684,7 @@ function renderToc() {
       savePosition();
       renderPage();
       closeToc();
+      hideChrome();
     });
     tocList.appendChild(el);
   });
@@ -628,8 +718,8 @@ function renderPage() {
 }
 
 // ── NAVIGATION ──
-prevBtn.addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderPage(); } });
-nextBtn.addEventListener('click', () => { if (currentPage < pages.length - 1) { currentPage++; renderPage(); } });
+prevBtn.addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderPage(); hideChrome(); } });
+nextBtn.addEventListener('click', () => { if (currentPage < pages.length - 1) { currentPage++; renderPage(); hideChrome(); } });
 
 // ── SAVE POSITION ──
 function savePosition() {
